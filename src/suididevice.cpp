@@ -58,25 +58,47 @@ SUIDIDevice::SUIDIDevice(struct libusb_device* device, libusb_device_descriptor 
     , m_descriptor(desc)
     , m_handle(NULL)
     , m_running(false)
-    , m_frequency(100)
+    , m_frequency(SUIDI_DEFAULT_FREQUENCY)
     , m_granularity(Unknown)
 {
     Q_ASSERT(device != NULL);
-
-    QSettings settings("settings.ini", QSettings::IniFormat);
-    QVariant var = settings.value(SETTINGS_FREQUENCY);
-    if (var.isValid() == true)
-        m_frequency = var.toDouble();
-
-    extractName();
+    extractNameEndpoints();
+    /* free suidi requsts */
+    for(int universeNumber = 0;
+        universeNumber < SUIDI_MAX_UNIVERSES;
+        universeNumber++)
+    {
+        int i = 0,z = 0;
+        for(int x = 0;x < 9;x++){
+            m_universe[universeNumber][z] = uchar(x);
+            z++;
+            for(int y = 0;y < 57;y++, i++){
+                if(i < 512){
+                    m_universe[universeNumber][z] = 0x00;
+                    z++;
+                }
+            }
+            m_universe[universeNumber][z] = uchar(0x00);
+            z++;
+            m_universe[universeNumber][z] = uchar(0x00);
+            z++;
+            m_universe[universeNumber][z] = uchar(0x00);
+            z++;
+            m_universe[universeNumber][z] = uchar(0x00);
+            z++;
+            m_universe[universeNumber][z] = uchar(0x00);
+            z++;
+            m_universe[universeNumber][z] = uchar(0x00);
+            z++;
+        }
+        m_universe[universeNumber][SUIDI_PACKET_SIZE - 1] = uchar(0xFF);
+    }
 }
 
 SUIDIDevice::~SUIDIDevice()
 {
-    QSettings settings("settings.ini", QSettings::IniFormat);
-    settings.setValue(SETTINGS_FREQUENCY, m_frequency);
-    settings.sync();
-    close();
+    for(qsizetype i = 0;i < endpoints.count();i++)
+        close(i);
 }
 
 /****************************************************************************
@@ -130,7 +152,7 @@ bool SUIDIDevice::isSUIDIDevice(const struct libusb_device_descriptor* desc)
     return isSUIDI;
 }
 
-void SUIDIDevice::extractName()
+void SUIDIDevice::extractNameEndpoints()
 {
     Q_ASSERT(m_device != NULL);
 
@@ -143,7 +165,7 @@ void SUIDIDevice::extractName()
 
         /* Extract the name */
         len = libusb_get_string_descriptor_ascii(handle, m_descriptor->iProduct,
-                                               (uchar*) &buf, sizeof(buf));
+                                                 (uchar*) &buf, sizeof(buf));
         if (len > 0)
         {
             m_name = QString(QByteArray(buf, len));
@@ -154,20 +176,29 @@ void SUIDIDevice::extractName()
             qWarning() << "Unable to get product name:" << len;
         }
 
-         m_config = (libusb_config_descriptor*)malloc(sizeof(*m_config));
-         if (m_config)
-             libusb_get_active_config_descriptor(m_device, &m_config);
-         endpoints.clear();
-         int endp = (int)m_config->interface[0].altsetting[0].bNumEndpoints;
-         for(int i = 0;i < endp;i++){
-             uint8_t bEndpointAddress = m_config->interface[0].altsetting[0].endpoint[i].bEndpointAddress;
-             uint8_t bDescriptorType = m_config->interface[0].altsetting[0].endpoint[i].bDescriptorType;
-             if(bDescriptorType == LIBUSB_DT_ENDPOINT && bEndpointAddress < 0x80)
-                 endpoints.append(bEndpointAddress);
-             uint16_t wMaxPacketSize = m_config->interface[0].altsetting[0].endpoint[i].wMaxPacketSize;
-             if(len > wMaxPacketSize)
-                 len = static_cast<int>(wMaxPacketSize);
-         }
+        m_config = (libusb_config_descriptor*)malloc(sizeof(*m_config));
+        len = libusb_get_active_config_descriptor(m_device, &m_config);
+        endpoints.clear();
+        if (len > -1){
+            int endp = (int)m_config->interface[0].altsetting[0].bNumEndpoints;
+            if(endp > SUIDI_MAX_UNIVERSES)
+                endp = SUIDI_MAX_UNIVERSES;
+            for(int i = 0;i < endp;i++){
+                uint8_t bEndpointAddress = m_config->interface[0].altsetting[0].endpoint[i].bEndpointAddress;
+                uint8_t bDescriptorType = m_config->interface[0].altsetting[0].endpoint[i].bDescriptorType;
+                if(bDescriptorType == LIBUSB_DT_ENDPOINT && bEndpointAddress < 0x80)
+                    endpoints.append(new UniverseEndpoint{
+                                         bEndpointAddress, false
+                                     });
+                uint16_t wMaxPacketSize = m_config->interface[0].altsetting[0].endpoint[i].wMaxPacketSize;
+                if(len > static_cast<int>(wMaxPacketSize))
+                    len = static_cast<int>(wMaxPacketSize);
+            }
+        }
+        else
+        {
+            endpoints.append(new UniverseEndpoint{ 0x02, false });
+        }
     }
     libusb_close(handle);
 }
@@ -212,8 +243,18 @@ QString SUIDIDevice::infoText() const
  * Open & close
  ****************************************************************************/
 
-bool SUIDIDevice::open()
+bool SUIDIDevice::open(quint32 universe)
 {
+    /* Return if already opened by another universe */
+    bool opened = false;
+    for(qsizetype i = 0;i < endpoints.count();i++)
+        if(endpoints.at(i)->opened)
+            opened = endpoints.at(i)->opened;
+    /* Set opened flag for universe */
+    endpoints.at(universe)->opened = true;
+    if(opened)
+        return true;
+
     if (m_device != NULL && m_handle == NULL)
     {
         qDebug() << "Open SUIDI with idProduct:" << m_descriptor->idProduct;
@@ -336,8 +377,18 @@ bool SUIDIDevice::open()
     return true;
 }
 
-void SUIDIDevice::close()
+void SUIDIDevice::close(quint32 universe)
 {
+    /* Set opened flag for universe */
+    endpoints.at(universe)->opened = false;
+    /* Return if opened by another universe */
+    bool opened = false;
+    for(qsizetype i = 0;i < endpoints.count();i++)
+        if(endpoints.at(i)->opened)
+            opened = endpoints.at(i)->opened;
+    if(opened)
+        return;
+
     stop();
 
     if (m_device != NULL && m_handle != NULL)
@@ -355,33 +406,33 @@ const struct libusb_device* SUIDIDevice::device() const
  * Thread
  ****************************************************************************/
 
-void SUIDIDevice::outputDMX(const QByteArray& universe)
+void SUIDIDevice::outputDMX(quint32 universeNumber, const QByteArray& universe)
 {
     /* Create SUIDI request */
     int i = 0,z = 0;
     for(int x = 0;x < 9;x++){
-        m_universe[z] = uchar(x);
+        m_universe[universeNumber][z] = uchar(x);
         z++;
         for(int y = 0;y < 57;y++, i++){
             if(i < 512){
-                m_universe[z] = universe.at(i);
+                m_universe[universeNumber][z] = universe.at(i);
                 z++;
             }
         }
-        m_universe[z] = uchar(0x00);
+        m_universe[universeNumber][z] = uchar(0x00);
         z++;
-        m_universe[z] = uchar(0x00);
+        m_universe[universeNumber][z] = uchar(0x00);
         z++;
-        m_universe[z] = uchar(0x00);
+        m_universe[universeNumber][z] = uchar(0x00);
         z++;
-        m_universe[z] = uchar(0x00);
+        m_universe[universeNumber][z] = uchar(0x00);
         z++;
-        m_universe[z] = uchar(0x00);
+        m_universe[universeNumber][z] = uchar(0x00);
         z++;
-        m_universe[z] = uchar(0x00);
+        m_universe[universeNumber][z] = uchar(0x00);
         z++;
     }
-    m_universe[SUIDI_PACKET_SIZE - 1] = uchar(0xFF);
+    m_universe[universeNumber][SUIDI_PACKET_SIZE - 1] = uchar(0xFF);
 }
 
 void SUIDIDevice::stop()
@@ -394,6 +445,7 @@ void SUIDIDevice::stop()
         wait(100);
     }
 }
+
 void SUIDIDevice::run()
 {
     // One "official" DMX frame can take (1s/44Hz) = 23ms
@@ -421,8 +473,8 @@ void SUIDIDevice::run()
         /* Write all 512 channels */
         for(qsizetype i = 0;i < endpoints.count();i++){
             r = libusb_bulk_transfer(m_handle,
-                                     endpoints.at(i),
-                                     m_universe,
+                                     endpoints.at(i)->endpoint,
+                                     m_universe[i],
                                      SUIDI_PACKET_SIZE,
                                      &len,
                                      0);
@@ -431,13 +483,13 @@ void SUIDIDevice::run()
         }
 
         r = libusb_control_transfer(m_handle,
-                            0xc0,
-                            0x08,
-                            0x0000,
-                            0x0000,
-                            new uchar (0x00),
-                            0x02,
-                            10);
+                                    0xc0,
+                                    0x08,
+                                    0x0000,
+                                    0x0000,
+                                    new uchar (0x00),
+                                    0x02,
+                                    10);
         if (r < 0)
             qWarning() << "SUIDI: unable to write universe:" << libusb_strerror(libusb_error(r));
 

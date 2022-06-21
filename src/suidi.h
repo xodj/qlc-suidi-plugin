@@ -9,6 +9,13 @@
 struct libusb_device;
 class SUIDIDevice;
 
+typedef struct {
+    quint32 output;
+    SUIDIDevice *device;
+    quint32 outputUniverse;
+
+} DeviceOutputs;
+
 class SUIDI : public QLCIOPlugin
 {
     Q_OBJECT
@@ -65,6 +72,7 @@ private:
 
     /** List of available devices */
     QList <SUIDIDevice*> m_devices;
+    QList <DeviceOutputs*> m_deviceOutputs;
 
     /*********************************************************************
      * Configuration

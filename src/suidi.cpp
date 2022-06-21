@@ -37,30 +37,51 @@ int SUIDI::capabilities() const
 
 bool SUIDI::openOutput(quint32 output, quint32 universe)
 {
-    if (output < quint32(m_devices.size()))
+    if (output < quint32(m_deviceOutputs.size()))
     {
         addToMap(universe, output, Output);
-        return m_devices.at(output)->open();
+        return m_deviceOutputs.at(output)->device->
+                open(m_deviceOutputs.at(output)->outputUniverse);
     }
     return false;
 }
 
 void SUIDI::closeOutput(quint32 output, quint32 universe)
 {
-    if (output < quint32(m_devices.size()))
+    if (output < quint32(m_deviceOutputs.size()))
     {
         removeFromMap(output, universe, Output);
-        m_devices.at(output)->close();
+        m_deviceOutputs.at(output)->device->
+                close(m_deviceOutputs.at(output)->outputUniverse);
     }
 }
 
 QStringList SUIDI::outputs()
 {
+    /* Clear m_deviceOutputs list */
+    while (m_deviceOutputs.count()){
+        DeviceOutputs *m_deviceOutput = m_deviceOutputs.first();
+        m_deviceOutputs.removeFirst();
+        delete m_deviceOutput;
+    }
+    /* Make new m_deviceOutputs list */
     QStringList list;
-
     QListIterator <SUIDIDevice*> it(m_devices);
-    while (it.hasNext() == true)
-        list << it.next()->name();
+    quint32 itNumber = 0;
+    while (it.hasNext() == true){
+        SUIDIDevice *device = it.next();
+        quint32 outputs = static_cast<quint32>(device->outpust());
+        if(outputs > 1){
+            for(quint32 uNumber = 0;uNumber < outputs;uNumber++, itNumber++){
+                list << device->name() + " U" + QString::number(uNumber + 1);
+                DeviceOutputs *m_deviceOutput =
+                        new DeviceOutputs { itNumber, device, uNumber };
+                m_deviceOutputs.append(m_deviceOutput);
+            }
+        } else {
+            list << device->name();
+        }
+    }
 
     return list;
 }
@@ -101,9 +122,9 @@ QString SUIDI::outputInfo(quint32 output)
 void SUIDI::writeUniverse(quint32 universe, quint32 output, const QByteArray &data)
 {
     Q_UNUSED(universe)
-
-    if (output < quint32(m_devices.size()))
-        m_devices.at(output)->outputDMX(data);
+    if (output < quint32(m_deviceOutputs.size()))
+        m_deviceOutputs.at(output)->device->
+                outputDMX(m_deviceOutputs.at(output)->outputUniverse, data);
 }
 
 void SUIDI::rescanDevices()

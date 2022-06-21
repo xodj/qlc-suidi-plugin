@@ -5,7 +5,7 @@
 
 #define SUIDI_PACKET_SIZE 576
 #define SUIDI_MAX_UNIVERSES 4
-#define SUIDI_DEFAULT_FREQUENCY 100
+#define SUIDI_DEFAULT_FREQUENCY 44
 
 struct libusb_device;
 struct libusb_device_handle;

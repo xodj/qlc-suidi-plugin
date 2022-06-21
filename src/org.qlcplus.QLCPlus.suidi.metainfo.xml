@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="addon">
+  <id>org.qlcplus.QLCPlus.udmx</id>
+  <extends>org.qlcplus.QLCPlus</extends>
+  <name>uDMX</name>
+  <summary>uDMX plugin for QLC+</summary>
+  <url type="homepage">https://www.qlcplus.org/</url>
+  <url type="bugtracker">https://github.com/mcallegari/qlcplus/issues/new?title=[uDMX]:</url>
+  <metadata_license>CC-BY-SA-3.0</metadata_license>
+  <project_license>Apache-2.0</project_license>
+  <provides>
+    <modalias>usb:v6244p0301d*</modalias>
+    <modalias>usb:v6244p0302d*</modalias>
+    <modalias>usb:v6244p0303d*</modalias>
+    <modalias>usb:v6244p0401d*</modalias>
+    <modalias>usb:v6244p0411d*</modalias>
+    <modalias>usb:v6244p0531d*</modalias>
+    <modalias>usb:v6244p0532d*</modalias>
+    <modalias>usb:v6244p0421d*</modalias>
+    <modalias>usb:v6244p0431d*</modalias>
+    <modalias>usb:v6244p0441d*</modalias>
+    <modalias>usb:v6244p0511d*</modalias>
+    <modalias>usb:v6244p0451d*</modalias>
+    <modalias>usb:v6244p0491d*</modalias>
+    <modalias>usb:v6244p0591d*</modalias>
+    <modalias>usb:v6244p0601d*</modalias>
+    <modalias>usb:v6244p0611d*</modalias>
+    <modalias>usb:v6244p0650d*</modalias>
+    <modalias>usb:v6244p0651d*</modalias>
+    <modalias>usb:v6244p0653d*</modalias>
+    <modalias>usb:v6244p0655d*</modalias>
+    <modalias>usb:v6244p0631d*</modalias>
+    <modalias>usb:v6244p0471d*</modalias>
+    <modalias>usb:v6244p0461d*</modalias>
+    <modalias>usb:v6244p0501d*</modalias>
+    <modalias>usb:v6244p0521d*</modalias>
+    <modalias>usb:v6244p0481d*</modalias>
+    <modalias>usb:v6244p0541d*</modalias>
+    <modalias>usb:v6244p0561d*</modalias>
+    <modalias>usb:v6244p0571d*</modalias>
+    <modalias>usb:v6244p0581d*</modalias>
+    <modalias>usb:v6244p0621d*</modalias>
+  </provides>
+</component>

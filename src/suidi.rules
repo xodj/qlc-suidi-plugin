@@ -1,0 +1,37 @@
+# These rules should work on newer udev architecture as well as the older one.
+# Basically they watch for all "usb" subsystem add/change events, that occur
+# for Anyma's uDMX devices and clones, and
+# set their device nodes' permissions so that ALL users can read and write to
+# them. The devices nodes are found under /dev/bus/usb/xxx/yyy.
+SUBSYSTEM=="usb*", ACTION=="add|change", ATTRS{idVendor}=="6244", ATTRS{idProduct}=="0301", MODE="0666"
+SUBSYSTEM=="usb*", ACTION=="add|change", ATTRS{idVendor}=="6244", ATTRS{idProduct}=="0302", MODE="0666"
+SUBSYSTEM=="usb*", ACTION=="add|change", ATTRS{idVendor}=="6244", ATTRS{idProduct}=="0303", MODE="0666"
+SUBSYSTEM=="usb*", ACTION=="add|change", ATTRS{idVendor}=="6244", ATTRS{idProduct}=="0401", MODE="0666"
+SUBSYSTEM=="usb*", ACTION=="add|change", ATTRS{idVendor}=="6244", ATTRS{idProduct}=="0411", MODE="0666"
+SUBSYSTEM=="usb*", ACTION=="add|change", ATTRS{idVendor}=="6244", ATTRS{idProduct}=="0531", MODE="0666"
+SUBSYSTEM=="usb*", ACTION=="add|change", ATTRS{idVendor}=="6244", ATTRS{idProduct}=="0532", MODE="0666"
+SUBSYSTEM=="usb*", ACTION=="add|change", ATTRS{idVendor}=="6244", ATTRS{idProduct}=="0421", MODE="0666"
+SUBSYSTEM=="usb*", ACTION=="add|change", ATTRS{idVendor}=="6244", ATTRS{idProduct}=="0431", MODE="0666"
+SUBSYSTEM=="usb*", ACTION=="add|change", ATTRS{idVendor}=="6244", ATTRS{idProduct}=="0441", MODE="0666"
+SUBSYSTEM=="usb*", ACTION=="add|change", ATTRS{idVendor}=="6244", ATTRS{idProduct}=="0511", MODE="0666"
+SUBSYSTEM=="usb*", ACTION=="add|change", ATTRS{idVendor}=="6244", ATTRS{idProduct}=="0451", MODE="0666"
+SUBSYSTEM=="usb*", ACTION=="add|change", ATTRS{idVendor}=="6244", ATTRS{idProduct}=="0491", MODE="0666"
+SUBSYSTEM=="usb*", ACTION=="add|change", ATTRS{idVendor}=="6244", ATTRS{idProduct}=="0591", MODE="0666"
+SUBSYSTEM=="usb*", ACTION=="add|change", ATTRS{idVendor}=="6244", ATTRS{idProduct}=="0601", MODE="0666"
+SUBSYSTEM=="usb*", ACTION=="add|change", ATTRS{idVendor}=="6244", ATTRS{idProduct}=="0611", MODE="0666"
+SUBSYSTEM=="usb*", ACTION=="add|change", ATTRS{idVendor}=="6244", ATTRS{idProduct}=="0650", MODE="0666"
+SUBSYSTEM=="usb*", ACTION=="add|change", ATTRS{idVendor}=="6244", ATTRS{idProduct}=="0651", MODE="0666"
+SUBSYSTEM=="usb*", ACTION=="add|change", ATTRS{idVendor}=="6244", ATTRS{idProduct}=="0653", MODE="0666"
+SUBSYSTEM=="usb*", ACTION=="add|change", ATTRS{idVendor}=="6244", ATTRS{idProduct}=="0655", MODE="0666"
+SUBSYSTEM=="usb*", ACTION=="add|change", ATTRS{idVendor}=="6244", ATTRS{idProduct}=="0631", MODE="0666"
+SUBSYSTEM=="usb*", ACTION=="add|change", ATTRS{idVendor}=="6244", ATTRS{idProduct}=="0471", MODE="0666"
+SUBSYSTEM=="usb*", ACTION=="add|change", ATTRS{idVendor}=="6244", ATTRS{idProduct}=="0461", MODE="0666"
+SUBSYSTEM=="usb*", ACTION=="add|change", ATTRS{idVendor}=="6244", ATTRS{idProduct}=="0501", MODE="0666"
+SUBSYSTEM=="usb*", ACTION=="add|change", ATTRS{idVendor}=="6244", ATTRS{idProduct}=="0521", MODE="0666"
+SUBSYSTEM=="usb*", ACTION=="add|change", ATTRS{idVendor}=="6244", ATTRS{idProduct}=="0481", MODE="0666"
+SUBSYSTEM=="usb*", ACTION=="add|change", ATTRS{idVendor}=="6244", ATTRS{idProduct}=="0541", MODE="0666"
+SUBSYSTEM=="usb*", ACTION=="add|change", ATTRS{idVendor}=="6244", ATTRS{idProduct}=="0561", MODE="0666"
+SUBSYSTEM=="usb*", ACTION=="add|change", ATTRS{idVendor}=="6244", ATTRS{idProduct}=="0571", MODE="0666"
+SUBSYSTEM=="usb*", ACTION=="add|change", ATTRS{idVendor}=="6244", ATTRS{idProduct}=="0581", MODE="0666"
+SUBSYSTEM=="usb*", ACTION=="add|change", ATTRS{idVendor}=="6244", ATTRS{idProduct}=="0621", MODE="0666"
+

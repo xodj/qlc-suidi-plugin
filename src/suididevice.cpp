@@ -75,6 +75,7 @@ SUIDIDevice::~SUIDIDevice()
 {
     QSettings settings("settings.ini", QSettings::IniFormat);
     settings.setValue(SETTINGS_FREQUENCY, m_frequency);
+    settings.sync();
     close();
 }
 
@@ -88,44 +89,45 @@ bool SUIDIDevice::isSUIDIDevice(const struct libusb_device_descriptor* desc)
         return false;
 
     if (desc->idVendor != SUIDI_SHARED_VENDOR)
-            return false;
-
-    if (
-            desc->idProduct != SUIDI_SHARED_PRODUCT_00 &&
-            desc->idProduct != SUIDI_SHARED_PRODUCT_01 &&
-            desc->idProduct != SUIDI_SHARED_PRODUCT_02 &&
-            desc->idProduct != SUIDI_SHARED_PRODUCT_03 &&
-            desc->idProduct != SUIDI_SHARED_PRODUCT_04 &&
-            desc->idProduct != SUIDI_SHARED_PRODUCT_05 &&
-            desc->idProduct != SUIDI_SHARED_PRODUCT_06 &&
-            desc->idProduct != SUIDI_SHARED_PRODUCT_07 &&
-            desc->idProduct != SUIDI_SHARED_PRODUCT_08 &&
-            desc->idProduct != SUIDI_SHARED_PRODUCT_09 &&
-            desc->idProduct != SUIDI_SHARED_PRODUCT_10 &&
-            desc->idProduct != SUIDI_SHARED_PRODUCT_11 &&
-            desc->idProduct != SUIDI_SHARED_PRODUCT_12 &&
-            desc->idProduct != SUIDI_SHARED_PRODUCT_13 &&
-            desc->idProduct != SUIDI_SHARED_PRODUCT_14 &&
-            desc->idProduct != SUIDI_SHARED_PRODUCT_15 &&
-            desc->idProduct != SUIDI_SHARED_PRODUCT_16 &&
-            desc->idProduct != SUIDI_SHARED_PRODUCT_17 &&
-            desc->idProduct != SUIDI_SHARED_PRODUCT_18 &&
-            desc->idProduct != SUIDI_SHARED_PRODUCT_19 &&
-            desc->idProduct != SUIDI_SHARED_PRODUCT_20 &&
-            desc->idProduct != SUIDI_SHARED_PRODUCT_21 &&
-            desc->idProduct != SUIDI_SHARED_PRODUCT_22 &&
-            desc->idProduct != SUIDI_SHARED_PRODUCT_23 &&
-            desc->idProduct != SUIDI_SHARED_PRODUCT_24 &&
-            desc->idProduct != SUIDI_SHARED_PRODUCT_25 &&
-            desc->idProduct != SUIDI_SHARED_PRODUCT_26 &&
-            desc->idProduct != SUIDI_SHARED_PRODUCT_27 &&
-            desc->idProduct != SUIDI_SHARED_PRODUCT_28 &&
-            desc->idProduct != SUIDI_SHARED_PRODUCT_29 &&
-            desc->idProduct != SUIDI_SHARED_PRODUCT_30
-            )
         return false;
 
-    return true;
+    bool isSUIDI = true;
+    switch(desc->idProduct){
+    case SUIDI_SHARED_PRODUCT_00: break;
+    case SUIDI_SHARED_PRODUCT_01: break;
+    case SUIDI_SHARED_PRODUCT_02: break;
+    case SUIDI_SHARED_PRODUCT_03: break;
+    case SUIDI_SHARED_PRODUCT_04: break;
+    case SUIDI_SHARED_PRODUCT_05: break;
+    case SUIDI_SHARED_PRODUCT_06: break;
+    case SUIDI_SHARED_PRODUCT_07: break;
+    case SUIDI_SHARED_PRODUCT_08: break;
+    case SUIDI_SHARED_PRODUCT_09: break;
+    case SUIDI_SHARED_PRODUCT_10: break;
+    case SUIDI_SHARED_PRODUCT_11: break;
+    case SUIDI_SHARED_PRODUCT_12: break;
+    case SUIDI_SHARED_PRODUCT_13: break;
+    case SUIDI_SHARED_PRODUCT_14: break;
+    case SUIDI_SHARED_PRODUCT_15: break;
+    case SUIDI_SHARED_PRODUCT_16: break;
+    case SUIDI_SHARED_PRODUCT_17: break;
+    case SUIDI_SHARED_PRODUCT_18: break;
+    case SUIDI_SHARED_PRODUCT_19: break;
+    case SUIDI_SHARED_PRODUCT_20: break;
+    case SUIDI_SHARED_PRODUCT_21: break;
+    case SUIDI_SHARED_PRODUCT_22: break;
+    case SUIDI_SHARED_PRODUCT_23: break;
+    case SUIDI_SHARED_PRODUCT_24: break;
+    case SUIDI_SHARED_PRODUCT_25: break;
+    case SUIDI_SHARED_PRODUCT_26: break;
+    case SUIDI_SHARED_PRODUCT_27: break;
+    case SUIDI_SHARED_PRODUCT_28: break;
+    case SUIDI_SHARED_PRODUCT_29: break;
+    case SUIDI_SHARED_PRODUCT_30: break;
+    default: isSUIDI = false; break;
+    }
+
+    return isSUIDI;
 }
 
 void SUIDIDevice::extractName()
@@ -164,7 +166,7 @@ void SUIDIDevice::extractName()
                  endpoints.append(bEndpointAddress);
              uint16_t wMaxPacketSize = m_config->interface[0].altsetting[0].endpoint[i].wMaxPacketSize;
              if(len > wMaxPacketSize)
-                 len = wMaxPacketSize;
+                 len = static_cast<int>(wMaxPacketSize);
          }
     }
     libusb_close(handle);

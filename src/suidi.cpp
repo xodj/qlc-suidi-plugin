@@ -119,9 +119,10 @@ QString SUIDI::outputInfo(quint32 output)
     return str;
 }
 
-void SUIDI::writeUniverse(quint32 universe, quint32 output, const QByteArray &data)
+void SUIDI::writeUniverse(quint32 universe, quint32 output, const QByteArray &data, bool dataChanged)
 {
     Q_UNUSED(universe)
+    Q_UNUSED(dataChanged)
     if (output < quint32(m_deviceOutputs.size()))
         m_deviceOutputs.at(output)->device->
                 outputDMX(m_deviceOutputs.at(output)->outputUniverse, data);
